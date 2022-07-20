@@ -1,0 +1,21 @@
+{
+    "name" : "RefillableAmmo",
+    "description" : "Takes ammo over max and places it into ammo bags (if possible)",
+    "author" : "TNT3530",
+    "contact" : "TNT3530",
+    "version" : "1.0.0",
+    "blt_version" : 2,
+    "color" : "1 0.8 0",
+    "updates" : [
+    ],
+    "hooks":[  
+        {  
+            "hook_id":"lib/units/weapons/raycastweaponbase",
+            "script_path":"main.lua"
+        },
+        {  
+            "hook_id":"lib/units/beings/player/playerequipment",
+            "script_path":"main.lua"
+        }
+    ]
+}
