@@ -3,7 +3,7 @@
     "description" : "Takes ammo over max and places it into ammo bags (if possible)",
     "author" : "TNT3530",
     "contact" : "TNT3530",
-    "version" : "1.0.0",
+    "version" : "1.0.2",
     "blt_version" : 2,
     "color" : "1 0.8 0",
     "updates" : [
