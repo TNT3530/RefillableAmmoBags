@@ -105,13 +105,15 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 				
 				local ammoOverflow = ammoToAdd - ammo_base:get_ammo_max();
 				
-				if ammoOverflow > 0 then
-					weaponAmmoInformation[self.name_id].cache = weaponAmmoInformation[self.name_id].cache + ammoOverflow;
+				if weaponAmmoInformation.bagIndex > -1 then
+					if ammoOverflow > 0 then
+						weaponAmmoInformation[self.name_id].cache = weaponAmmoInformation[self.name_id].cache + ammoOverflow;
+					end
+				
+					displayProgress(self);
 				end
 				
 				ammo_base:set_ammo_total(ammoToAdd);
-				
-				displayProgress(self);
 					
 				return picked_up, add_amount;
 			end
