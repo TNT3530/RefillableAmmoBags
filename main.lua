@@ -66,7 +66,7 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 				end
 			else
 				if focusSupport then
-					local half_ammo = add_amount / 2;
+					local half_ammo = math.floor(add_amount / 2);
 					
 					weaponAmmoInformation[self.name_id].cache = weaponAmmoInformation[self.name_id].cache + half_ammo;
 					add_amount = half_ammo;
@@ -82,13 +82,14 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 				return picked_up, add_amount;
 			end
 			
-			if (weaponAmmoInformation[self.name_id].cache / weaponAmmoInformation[self.name_id].required >= 0.25) and not weaponAmmoInformation[self.name_id].quarter then
+			local percentage = weaponAmmoInformation[self.name_id].cache / weaponAmmoInformation[self.name_id].required;
+			if (percentage >= 0.25) and (not weaponAmmoInformation[self.name_id].quarter) then
 				managers.hud:show_hint({text = "Ammo Bag Progress: 25%"});
 				weaponAmmoInformation[self.name_id].quarter = true;
-			elseif (weaponAmmoInformation[self.name_id].cache / weaponAmmoInformation[self.name_id].required >= 0.5) and not weaponAmmoInformation[self.name_id].half then
+			elseif (percentage >= 0.5) and (not weaponAmmoInformation[self.name_id].half) then
 				managers.hud:show_hint({text = "Ammo Bag Progress: 50%"});
 				weaponAmmoInformation[self.name_id].half = true;
-			elseif (weaponAmmoInformation[self.name_id].cache / weaponAmmoInformation[self.name_id].required >= 0.75) and not weaponAmmoInformation[self.name_id].three then
+			elseif (percentage >= 0.75) and (not weaponAmmoInformation[self.name_id].three) then
 				managers.hud:show_hint({text = "Ammo Bag Progress: 75%"});
 				weaponAmmoInformation[self.name_id].three = true;
 			end

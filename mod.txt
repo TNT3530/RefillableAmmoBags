@@ -10,7 +10,7 @@
 		{
 			"identifier": "refillableammobags",
 			"host": {
-				"meta": "https://raw.githubusercontent.com/TNT3530/RefillableAmmoBags/master/update/meta.json"
+				"meta": "https://raw.githubusercontent.com/TNT3530/RefillableAmmoBags/main/update/meta.json"
 			}
 		}
     ],
