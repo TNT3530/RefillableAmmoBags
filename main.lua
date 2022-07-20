@@ -3,11 +3,23 @@ local focusSupport = true;
 
 local weaponAmmoInformation = {
 	weaponsReady = 0,
-	requireReset = 0
+	requireReset = 0,
+	checkedForBag = false,
+	bagIndex = -1
 };
 
 if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 	function RaycastWeaponBase:add_ammo(ratio, add_amount_override)
+	
+		if not weaponAmmoInformation.checkedForBag then
+			for index, name in ipairs(managers.player:equipment_slots()) do
+				if name == "ammo_bag" then
+					weaponAmmoInformation.bagIndex = index;
+				end
+			end
+			weaponAmmoInformation.checkedForBag = true;
+		end
+		
 		if not weaponAmmoInformation[self.name_id] then
 			weaponAmmoInformation[self.name_id] = {
 				cache = 0,
@@ -73,7 +85,7 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 			add_amount = math.floor(add_amount * (ratio or 1));
 			
 			if ammo_base:get_ammo_max() == ammo_base:get_ammo_total() then
-				if grabWhenFull then
+				if grabWhenFull and weaponAmmoInformation.bagIndex > -1 then
 					weaponAmmoInformation[self.name_id].cache = weaponAmmoInformation[self.name_id].cache + add_amount;
 					displayProgress(self);
 					
@@ -82,7 +94,7 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 					return false, 0
 				end
 			else
-				if focusSupport and (add_amount >= 2) then
+				if focusSupport and (add_amount >= 2) and weaponAmmoInformation.bagIndex > -1 then
 					local half_ammo = math.floor(add_amount / 2);
 					
 					weaponAmmoInformation[self.name_id].cache = weaponAmmoInformation[self.name_id].cache + half_ammo;
@@ -139,14 +151,7 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 		if (weaponAmmoInformation.weaponsReady == 2) then
 			--print("Filling Bag");
 			
-			local bagIndex = -1;
-			for index, name in ipairs(managers.player:equipment_slots()) do
-				if name == "ammo_bag" then
-					bagIndex = index;
-				end
-			end
-			
-			if bagIndex > -1 then
+			if weaponAmmoInformation.bagIndex > -1 then
 				local equipment, index = managers.player:equipment_data_by_name("ammo_bag");
 				local new_amount = Application:digest_value(equipment.amount[1], false) + 1;
 				equipment.amount[1] = Application:digest_value(new_amount, true);
