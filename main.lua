@@ -3,13 +3,12 @@ local focusSupport = true;
 
 local weaponAmmoInformation = {
 	weaponsReady = 0,
-	requireReset = false
+	requireReset = 0
 };
 
 if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 	function RaycastWeaponBase:add_ammo(ratio, add_amount_override)
 		if not weaponAmmoInformation[self.name_id] then
-			--print("Registered Weapon Ammo");
 			weaponAmmoInformation[self.name_id] = {
 				cache = 0,
 				required = self:get_ammo_total() * (tweak_data.upgrades.ammo_bag_base + managers.player:upgrade_value_by_level("ammo_bag", "ammo_increase", 1)),
@@ -17,13 +16,29 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 				quarter = false,
 				three = false
 			};
+			--print("Registered Weapon Ammo");
 		end
 		
-		if weaponAmmoInformation.requireReset then
+		if weaponAmmoInformation.requireReset > 0 then
 			weaponAmmoInformation[self.name_id].cache = 0;
 			weaponAmmoInformation[self.name_id].quarter = false;
 			weaponAmmoInformation[self.name_id].half = false;
 			weaponAmmoInformation[self.name_id].three = false;
+			weaponAmmoInformation.requireReset = weaponAmmoInformation.requireReset - 1;
+		end
+		
+		local function displayProgress(self)
+			local percentage = weaponAmmoInformation[self.name_id].cache / weaponAmmoInformation[self.name_id].required;
+			if (percentage >= 0.25) and (not weaponAmmoInformation[self.name_id].quarter) then
+				managers.hud:show_hint({text = "Ammo Bag Progress: 25%"});
+				weaponAmmoInformation[self.name_id].quarter = true;
+			elseif (percentage >= 0.5) and (not weaponAmmoInformation[self.name_id].half) then
+				managers.hud:show_hint({text = "Ammo Bag Progress: 50%"});
+				weaponAmmoInformation[self.name_id].half = true;
+			elseif (percentage >= 0.75) and (not weaponAmmoInformation[self.name_id].three) then
+				managers.hud:show_hint({text = "Ammo Bag Progress: 75%"});
+				weaponAmmoInformation[self.name_id].three = true;
+			end
 		end
 	
 		local function _add_ammo(ammo_base, ratio, add_amount_override)
@@ -60,12 +75,14 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 			if ammo_base:get_ammo_max() == ammo_base:get_ammo_total() then
 				if grabWhenFull then
 					weaponAmmoInformation[self.name_id].cache = weaponAmmoInformation[self.name_id].cache + add_amount;
+					displayProgress(self);
+					
 					return true, 0;
 				else
 					return false, 0
 				end
 			else
-				if focusSupport then
+				if focusSupport and (add_amount >= 2) then
 					local half_ammo = math.floor(add_amount / 2);
 					
 					weaponAmmoInformation[self.name_id].cache = weaponAmmoInformation[self.name_id].cache + half_ammo;
@@ -74,24 +91,17 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 					
 				local ammoToAdd = math.clamp(ammo_base:get_ammo_total() + add_amount, 0, ammo_base:get_ammo_max());
 				
-				local ammoOverflow = add_amount - ammoToAdd;
-				weaponAmmoInformation[self.name_id].cache = weaponAmmoInformation[self.name_id].cache + ammoOverflow;
+				local ammoOverflow = ammoToAdd - ammo_base:get_ammo_max();
+				
+				if ammoOverflow > 0 then
+					weaponAmmoInformation[self.name_id].cache = weaponAmmoInformation[self.name_id].cache + ammoOverflow;
+				end
 				
 				ammo_base:set_ammo_total(ammoToAdd);
+				
+				displayProgress(self);
 					
 				return picked_up, add_amount;
-			end
-			
-			local percentage = weaponAmmoInformation[self.name_id].cache / weaponAmmoInformation[self.name_id].required;
-			if (percentage >= 0.25) and (not weaponAmmoInformation[self.name_id].quarter) then
-				managers.hud:show_hint({text = "Ammo Bag Progress: 25%"});
-				weaponAmmoInformation[self.name_id].quarter = true;
-			elseif (percentage >= 0.5) and (not weaponAmmoInformation[self.name_id].half) then
-				managers.hud:show_hint({text = "Ammo Bag Progress: 50%"});
-				weaponAmmoInformation[self.name_id].half = true;
-			elseif (percentage >= 0.75) and (not weaponAmmoInformation[self.name_id].three) then
-				managers.hud:show_hint({text = "Ammo Bag Progress: 75%"});
-				weaponAmmoInformation[self.name_id].three = true;
 			end
 		end
 
@@ -114,11 +124,16 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 			end
 		end
 
+		--print("Weapon: " .. self.name_id);
 		--print("Total Cache: " .. weaponAmmoInformation[self.name_id].cache);
 		--print("Max Required Cache " .. weaponAmmoInformation[self.name_id].required);
 		
 		if weaponAmmoInformation[self.name_id].cache >= weaponAmmoInformation[self.name_id].required then
 			weaponAmmoInformation.weaponsReady = weaponAmmoInformation.weaponsReady + 1;
+		end
+		
+		if weaponAmmoInformation.weaponsReady > 2 then
+			weaponAmmoInformation.weaponsReady = 0;
 		end
 		
 		if (weaponAmmoInformation.weaponsReady == 2) then
@@ -160,7 +175,7 @@ if RequiredScript == "lib/units/weapons/raycastweaponbase" then
 			end
 			
 			weaponAmmoInformation.weaponsReady = 0;
-			weaponAmmoInformation.requireReset = true;
+			weaponAmmoInformation.requireReset = 2;
 		end
 
 		return picked_up, add_amount
