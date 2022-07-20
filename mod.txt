@@ -7,6 +7,12 @@
     "blt_version" : 2,
     "color" : "1 0.8 0",
     "updates" : [
+		{
+			"identifier": "refillableammobags",
+			"host": {
+				"meta": "https://raw.githubusercontent.com/TNT3530/RefillableAmmoBags/master/update/meta.json"
+			}
+		}
     ],
     "hooks":[  
         {  
